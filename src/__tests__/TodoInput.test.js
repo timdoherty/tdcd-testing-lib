@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 
 import TodoInput from '../TodoInput';
 
@@ -9,25 +9,25 @@ describe('<TodoInput/>', () => {
       describe('and the task name is not empty', () => {
         it('responds with the new task name and clears the new task name', () => {
           const todo = 'you do it too';
-          const onChangeMock = jest.fn();
-          const wrapper = shallow(<TodoInput onChange={onChangeMock} />);
+          const onKeyUpMock = jest.fn();
+          const wrapper = shallow(<TodoInput onKeyUp={onKeyUpMock} />);
 
           wrapper.simulate('change', { target: { value: todo } });
           wrapper.simulate('keyup', { key: 'Enter' });
 
-          expect(onChangeMock).toHaveBeenCalledWith(todo);
+          expect(onKeyUpMock).toHaveBeenCalledWith(todo);
           expect(wrapper.prop('value')).toBe('');
         });
       });
 
       describe('and the task name is empty', () => {
         it('does not respond', () => {
-          const onChangeMock = jest.fn();
-          const wrapper = shallow(<TodoInput onChange={onChangeMock} />);
+          const onKeyUpMock = jest.fn();
+          const wrapper = shallow(<TodoInput onKeyUp={onKeyUpMock} />);
 
           wrapper.simulate('keyup', { key: 'Enter', target: { value: '' } });
 
-          expect(onChangeMock).not.toHaveBeenCalled();
+          expect(onKeyUpMock).not.toHaveBeenCalled();
         });
       });
     });
