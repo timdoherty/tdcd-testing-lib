@@ -2,23 +2,28 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 
 function TodoInput(props) {
-  const [value, setValue] = useState('');
+  const { onTaskAdded = () => {} } = props;
+  const [todo, setTodo] = useState('');
+
+  function onChange(e) {
+    setTodo(e.target.value);
+  }
+
+  function onKeyPress(e) {
+    if (e.key === 'Enter' && !!todo) {
+      onTaskAdded(todo);
+      setTodo('');
+    }
+  }
   return (
-    <input
-      value={value}
-      onChange={e => setValue(e.target.value)}
-      onKeyUp={e => {
-        if (e.key === 'Enter' && value) {
-          props.onKeyUp(value);
-          setValue('');
-        }
-      }}
-    />
+    <>
+      <input value={todo} onChange={onChange} onKeyPress={onKeyPress} />
+    </>
   );
 }
 
-TodoInput.propTypes = {
-  onKeyUp: PropTypes.func.isRequired,
-};
+TodoInput.propTypes = {};
+
+TodoInput.defaultProps = {};
 
 export default TodoInput;

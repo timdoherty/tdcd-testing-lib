@@ -1,33 +1,44 @@
 import React from 'react';
-import { mount, shallow } from 'enzyme';
+import { render, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 
 import TodoInput from '../TodoInput';
 
-describe('<TodoInput/>', () => {
-  describe('given a place to enter a new task', () => {
+describe('TodoInput', () => {
+  describe('given a place to enter a task', () => {
     describe('when a user presses enter', () => {
-      describe('and the task name is not empty', () => {
-        it('responds with the new task name and clears the new task name', () => {
-          const todo = 'you do it too';
-          const onKeyUpMock = jest.fn();
-          const wrapper = shallow(<TodoInput onKeyUp={onKeyUpMock} />);
+      describe('and there is a task entered', () => {
+        it('responds with the task name', () => {
+          const todo = 'do the thing';
+          const onTaskAdded = jest.fn();
+          const { getByRole } = render(<TodoInput onTaskAdded={onTaskAdded} />);
+          const input = getByRole('textbox');
+          fireEvent.change(input, { target: { value: todo } });
+          fireEvent.keyPress(input, { key: 'Enter', code: 13, charCode: 13 });
 
-          wrapper.simulate('change', { target: { value: todo } });
-          wrapper.simulate('keyup', { key: 'Enter' });
+          expect(onTaskAdded).toHaveBeenCalledWith(todo);
+        });
 
-          expect(onKeyUpMock).toHaveBeenCalledWith(todo);
-          expect(wrapper.prop('value')).toBe('');
+        it('clears the task input', () => {
+          const todo = 'do the thing';
+          const { getByRole } = render(<TodoInput />);
+          const input = getByRole('textbox');
+          fireEvent.change(input, { target: { value: todo } });
+          expect(input).toHaveValue(todo);
+
+          fireEvent.keyPress(input, { key: 'Enter', code: 13, charCode: 13 });
+          expect(input).not.toHaveValue();
         });
       });
 
-      describe('and the task name is empty', () => {
+      describe('and no task is entered', () => {
         it('does not respond', () => {
-          const onKeyUpMock = jest.fn();
-          const wrapper = shallow(<TodoInput onKeyUp={onKeyUpMock} />);
+          const onTaskAdded = jest.fn();
+          const { getByRole } = render(<TodoInput onTaskAdded={onTaskAdded} />);
+          const input = getByRole('textbox');
+          fireEvent.keyPress(input, { key: 'Enter', code: 13, charCode: 13 });
 
-          wrapper.simulate('keyup', { key: 'Enter', target: { value: '' } });
-
-          expect(onKeyUpMock).not.toHaveBeenCalled();
+          expect(onTaskAdded).not.toHaveBeenCalled();
         });
       });
     });

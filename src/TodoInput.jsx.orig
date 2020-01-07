@@ -1,11 +1,8 @@
-<<<<<<< HEAD
 import React, { useState } from 'react';
-=======
-import React, { useRef } from 'react';
->>>>>>> d37f6a1... add propTypes to input
 import PropTypes from 'prop-types';
 
 function TodoInput(props) {
+<<<<<<< HEAD
   const [value, setValue] = useState('');
   return (
     <input
@@ -13,7 +10,7 @@ function TodoInput(props) {
       onChange={e => setValue(e.target.value)}
       onKeyUp={e => {
         if (e.key === 'Enter' && value) {
-          props.onChange(value);
+          props.onKeyUp(value);
           setValue('');
         }
       }}
@@ -22,11 +19,32 @@ function TodoInput(props) {
 }
 
 TodoInput.propTypes = {
-<<<<<<< HEAD
-  onChange: PropTypes.func.isRequired,
-=======
   onKeyUp: PropTypes.func.isRequired,
->>>>>>> d37f6a1... add propTypes to input
 };
+=======
+  const { onTaskAdded = () => {} } = props;
+  const [todo, setTodo] = useState('');
+
+  function onChange(e) {
+    setTodo(e.target.value);
+  }
+
+  function onKeyPress(e) {
+    if (e.key === 'Enter' && !!todo) {
+      onTaskAdded(todo);
+      setTodo('');
+    }
+  }
+  return (
+    <>
+      <input value={todo} onChange={onChange} onKeyPress={onKeyPress} />
+    </>
+  );
+}
+
+TodoInput.propTypes = {};
+
+TodoInput.defaultProps = {};
+>>>>>>> 5669d14... write todo input test with RTL
 
 export default TodoInput;
