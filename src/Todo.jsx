@@ -1,36 +1,33 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-function TodoStatus(props) {
-  return (
-    <input
-      type="checkbox"
-      checked={Boolean(props.isComplete)}
-      onChange={props.onChange}
-    />
-  );
-}
-const Delete = props => <button onClick={props.onClick}>Delete</button>;
-
 function Todo(props) {
+  const {
+    todo,
+    isComplete,
+    onCompletedToggled = () => {},
+    onDeleted = () => {},
+  } = props;
+
+  function onChange(e) {
+    onCompletedToggled(todo);
+  }
+
+  function onDeleteClick(e) {
+    onDeleted(todo);
+  }
+
   return (
-    <div>
-      <TodoStatus
-        isComplete={props.isComplete}
-        onChange={() => {
-          props.onChange(props.todo);
-        }}
-      />
-      {props.todo}
-      <Delete onClick={() => props.onRemove(props.todo)} />
-    </div>
+    <>
+      <span>{todo}</span>
+      <input type="checkbox" checked={isComplete} onChange={onChange} />
+      <button onClick={onDeleteClick}>Delete</button>
+    </>
   );
 }
 
-Todo.propTypes = {
-  isComplete: PropTypes.bool,
-  onChange: PropTypes.func.isRequired,
-  onRemove: PropTypes.func.isRequired,
-};
+Todo.propTypes = {};
+
+Todo.defaultProps = {};
 
 export default Todo;
