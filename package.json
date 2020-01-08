@@ -28,6 +28,7 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "enzyme": "3.10.0",
-    "enzyme-adapter-react-16": "1.14.0"
+    "enzyme-adapter-react-16": "1.14.0",
+    "react-addons-create-fragment": "^15.6.2"
   }
 }
