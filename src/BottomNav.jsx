@@ -1,37 +1,38 @@
-import React, { Fragment } from 'react';
+import React from 'react';
+import createFragment from 'react-addons-create-fragment';
 import PropTypes from 'prop-types';
 
 function BottomNav(props) {
+  const { options = [], onNavigationChanged = () => {}, selected = '' } = props;
+
   function onChange(e) {
-    props.onChange(e.target.value);
+    onNavigationChanged(e.target.value);
   }
+
   return (
-    <div>
-      {props.options.map(option => (
-        <Fragment key={option.value}>
-          <input
-            id={option.value}
-            type="radio"
-            name="nav"
-            value={option.value}
-            onChange={onChange}
-            checked={option.value === props.selected}
-          />
-          <label htmlFor={option.value}>{option.label}</label>
-        </Fragment>
-      ))}
-    </div>
+    <>
+      {options.map(opt => {
+        return createFragment({
+          [opt]: (
+            <input
+              key={opt}
+              type="radio"
+              id={opt}
+              value={opt}
+              name="selectedView"
+              onChange={onChange}
+              checked={selected === opt}
+            />
+          ),
+          [`${opt}-label`]: <label htmlFor={opt}>{opt}</label>,
+        });
+      })}
+    </>
   );
 }
 
-BottomNav.propTypes = {
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      label: PropTypes.string,
-      value: PropTypes.string,
-    })
-  ).isRequired,
-  onChange: PropTypes.func.isRequired,
-};
+BottomNav.propTypes = {};
+
+BottomNav.defaultProps = {};
 
 export default BottomNav;

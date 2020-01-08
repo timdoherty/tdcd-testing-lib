@@ -1,63 +1,46 @@
 import React from 'react';
-import { shallow } from 'enzyme';
+import { render, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 
 import BottomNav from '../BottomNav';
 
-const navOptions = [
-  { value: 'foo', label: 'foo' },
-  { value: 'bar', label: 'bar' },
-  { value: 'baz', label: 'baz' },
-];
+describe('BottomNav', () => {
+  const options = ['foo', 'bar', 'baz'];
 
-describe('<BottomNav/>', () => {
-  describe('given some navigation options', () => {
+  describe('given a list of navigation options', () => {
     describe('when displayed', () => {
-      it('all the options are shown', () => {
-        const wrapper = shallow(
-          <BottomNav options={navOptions} onChange={() => {}} />
-        );
-        expect(
-          wrapper
-            .children()
-            .findWhere(node =>
-              navOptions.find(option => option.value === node.prop('value'))
-            )
-        ).toHaveLength(navOptions.length);
+      it('shows each option', () => {
+        const { getAllByRole } = render(<BottomNav options={options} />);
+        const radios = getAllByRole('radio');
+
+        expect(radios).toHaveLength(options.length);
       });
 
-      describe('and a selection is provided', () => {
-        it('selects the right option', () => {
-          const wrapper = shallow(
-            <BottomNav
-              options={navOptions}
-              selected={navOptions[1].value}
-              onChange={() => {}}
-            />
+      describe('and an option is already chosen', () => {
+        it('selects the chosen option', () => {
+          const { getByLabelText, debug } = render(
+            <BottomNav options={options} selected="bar" />
           );
-
-          expect(
-            wrapper
-              .children()
-              .findWhere(node => node.prop('value') === navOptions[1].value)
-              .prop('checked')
-          ).toBe(true);
+          debug();
+          const barOption = getByLabelText('bar');
+          expect(barOption).toBeChecked();
         });
       });
     });
 
-    describe('when an option is selected', () => {
-      it('responds with the selected option', () => {
-        const onChangeMock = jest.fn();
-        const wrapper = shallow(
-          <BottomNav options={navOptions} onChange={onChangeMock} />
+    describe('when a user chooses a nagivation option', () => {
+      it('responds with the option name', () => {
+        const onNavigationChanged = jest.fn();
+        const { getByLabelText } = render(
+          <BottomNav
+            options={options}
+            onNavigationChanged={onNavigationChanged}
+          />
         );
+        const fooOption = getByLabelText('foo');
+        fireEvent.click(fooOption);
 
-        const firstOption = wrapper.children().first();
-        firstOption.simulate('change', {
-          target: { value: firstOption.prop('value') },
-        });
-
-        expect(onChangeMock).toHaveBeenCalledWith(navOptions[0].value);
+        expect(onNavigationChanged).toHaveBeenCalledWith('foo');
       });
     });
   });
