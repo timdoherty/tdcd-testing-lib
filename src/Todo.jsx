@@ -19,8 +19,13 @@ function Todo(props) {
 
   return (
     <>
-      <span>{todo}</span>
-      <input type="checkbox" checked={isComplete} onChange={onChange} />
+      <label htmlFor={todo}>{todo}</label>
+      <input
+        id={todo}
+        type="checkbox"
+        checked={isComplete}
+        onChange={onChange}
+      />
       <button onClick={onDeleteClick}>Delete</button>
     </>
   );

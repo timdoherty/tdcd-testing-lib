@@ -1,6 +1,6 @@
 import React from 'react';
-import { act } from 'react-dom/test-utils';
-import { shallow } from 'enzyme';
+import { render, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom/extend-expect';
 
 import Todos from '../Todos';
 
@@ -8,114 +8,75 @@ const todos = new Map([
   ['foo', false],
   ['bar', true],
   ['baz', false],
-  ['bim', true],
-  ['bop', false],
-  ['bap', true],
-  ['boo', true],
+  ['bim', false],
 ]);
 
-describe('<Todos/>', () => {
+describe('Todos', () => {
   describe('given a list of tasks', () => {
     describe('when displayed', () => {
-      it('all tasks are shown', () => {
-        const wrapper = shallow(<Todos todos={todos} />);
-        expect(wrapper.find('Todo')).toHaveLength(todos.size);
+      it('shows each task in the list', () => {
+        const { getAllByRole, debug } = render(<Todos todos={todos} />);
+        // debug();
+        const checkboxes = getAllByRole('checkbox');
+        expect(checkboxes).toHaveLength(todos.size);
       });
     });
 
-    describe('when a user enters a new task', () => {
-      it('adds the new task the displayed tasks', () => {
-        const todo =
-          'do something very important, because I am an important person';
-        const wrapper = shallow(<Todos todos={todos} />);
+    describe('when a user chooses to add a new task', () => {
+      it('displays the new task', () => {
+        const todo = 'do the thing!';
+        const { getByLabelText, getByRole, getAllByRole, debug } = render(
+          <Todos todos={todos} />
+        );
+        const input = getByRole('textbox');
+        fireEvent.change(input, { target: { value: todo } });
+        fireEvent.keyPress(input, { key: 'Enter', code: 13, charCode: 13 });
 
-        wrapper
-          .find('TodoInput')
-          .props()
-          .onChange(todo);
+        const checkboxes = getAllByRole('checkbox');
+        expect(checkboxes).toHaveLength(todos.size + 1);
 
-        expect(wrapper.find('Todo')).toHaveLength(todos.size + 1);
+        expect(getByLabelText(todo)).toBeTruthy();
       });
     });
 
-    describe('when a user chooses to see only active tasks', () => {
-      it('shows only active tasks', () => {
-        const wrapper = shallow(<Todos todos={todos} />);
+    describe('and a user wants to see only active tasks', () => {
+      it('only shows active tasks', () => {
+        const { getAllByRole, getByLabelText, queryByLabelText } = render(
+          <Todos todos={todos} />
+        );
 
-        wrapper
-          .find('BottomNav')
-          .props()
-          .onChange('active');
-        expect(wrapper.find('BottomNav').prop('selected')).toBe('active');
-        expect(wrapper.find('Todo')).toHaveLength(3);
+        //find radio button for active
+        const activeButton = getByLabelText('active');
+        fireEvent.click(activeButton);
+
+        const tasks = getAllByRole('checkbox');
+        expect(tasks.every(task => task.checked)).toBe(true);
       });
 
-      describe('and the user completes an active task', () => {
-        it('removes the task from the current view', () => {
-          const wrapper = shallow(<Todos todos={todos} />);
+      it('only shows completed tasks', () => {
+        const { getAllByRole, getByLabelText, queryByLabelText } = render(
+          <Todos todos={todos} />
+        );
 
-          wrapper
-            .find('BottomNav')
-            .props()
-            .onChange('active');
+        //find radio button for active
+        const activeButton = getByLabelText('done');
+        fireEvent.click(activeButton);
 
-          const activeTodo = wrapper.find('Todo').first();
-          activeTodo.props().onChange(activeTodo.prop('todo'));
-
-          expect(wrapper.find('Todo')).toHaveLength(2);
-        });
-      });
-    });
-
-    describe('when a user choose to see only completed tasks', () => {
-      it('shows only completed tasks', () => {
-        const wrapper = shallow(<Todos todos={todos} />);
-
-        wrapper
-          .find('BottomNav')
-          .props()
-          .onChange('done');
-
-        expect(wrapper.find('BottomNav').prop('selected')).toBe('done');
-        expect(wrapper.find('Todo')).toHaveLength(4);
-      });
-
-      describe('and the user toggles a completed task', () => {
-        it('removes the task from the current view', () => {
-          const wrapper = shallow(<Todos todos={todos} />);
-
-          wrapper
-            .find('BottomNav')
-            .props()
-            .onChange('done');
-
-          const completedTodo = wrapper.find('Todo').first();
-          completedTodo.props().onChange(completedTodo.prop('todo'));
-
-          expect(wrapper.find('Todo')).toHaveLength(3);
-        });
+        const tasks = getAllByRole('checkbox');
+        expect(tasks.every(task => task.checked)).toBe(false);
       });
     });
+  });
 
-    describe('when a user chooses to remove a task', () => {
-      it('removes the task', () => {
-        const wrapper = shallow(<Todos todos={todos} />);
+  describe('when a user chooses to remove a task', () => {
+    it('no longer displays the task', () => {
+      const { getByLabelText, queryByLabelText } = render(
+        <Todos todos={todos} />
+      );
 
-        const todo = wrapper.find('Todo').first();
-        todo.props().onRemove(todo.prop('todo'));
-
-        expect(wrapper.find('Todo')).toHaveLength(todos.size - 1);
-      });
-    });
-
-    describe('when a user chooses to remove all tasks', () => {
-      it('removes all the tasks', () => {
-        const wrapper = shallow(<Todos todos={todos} />);
-
-        wrapper.find('DeleteAll').simulate('click');
-
-        expect(wrapper.find('Todos')).toHaveLength(0);
-      });
+      // how to do this less brittly, aside from using a 'testId'
+      fireEvent.click(getByLabelText('bar').nextSibling);
+      expect(queryByLabelText('bar')).toBeNull();
     });
   });
 });

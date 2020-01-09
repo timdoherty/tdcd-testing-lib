@@ -5,85 +5,45 @@ import Todo from './Todo';
 import TodoInput from './TodoInput';
 import BottomNav from './BottomNav';
 
-const DeleteAll = props => <button onClick={props.onClick}>Delete All</button>;
+const views = ['all', 'active', 'done'];
 
-const views = ['All', 'Active', 'Done'];
+function Todos(props) {
+  const [todos, setTodos] = useState(new Map(props.todos || []));
 
-function useTodos(props) {
-  const [todos, setTodos] = useState(props.todos || new Map());
-  const [view, setView] = useState('all');
-  const predicates = {
-    active: ([task, isComplete]) => !isComplete,
-    done: ([task, isComplete]) => isComplete,
-  };
-  const predicate = predicates[view] || (() => true);
-
-  function toggleTodo(todo) {
-    setTodos(new Map(todos).set(todo, !todos.get(todo)));
+  function onInputChanged(task) {
+    setTodos(new Map(todos.set(task, false)));
   }
 
-  function addTodo(todo) {
-    setTodos(new Map(todos).set(todo, false));
-  }
-
-  function removeTodo(todo) {
-    let newTodos = new Map(todos);
-    newTodos.delete(todo);
+  function deleteTask(task) {
+    const newTodos = new Map(todos);
+    newTodos.delete(task);
     setTodos(newTodos);
   }
 
-  function removeAll() {
-    setTodos(new Map());
+  function onViewChanged(view) {
+    const newTodos = new Map(
+      [...todos.entries()].filter(([key, value]) => {
+        switch (view) {
+          case 'active':
+            return !!value;
+          case 'done':
+            return value === false;
+          default:
+            return true;
+        }
+      })
+    );
+    setTodos(newTodos);
   }
-
-  function changeView(view) {
-    setView(view);
-  }
-
-  return {
-    todos: [...todos.entries()].filter(predicate),
-    addTodo,
-    toggleTodo,
-    removeTodo,
-    removeAll,
-    view,
-    changeView,
-  };
-}
-
-function Todos(props) {
-  const {
-    todos,
-    toggleTodo,
-    addTodo,
-    removeTodo,
-    removeAll,
-    view,
-    changeView,
-  } = useTodos(props);
 
   return (
-    <div>
-      <TodoInput onChange={addTodo} />
-      <DeleteAll onClick={removeAll} />
-      {todos.map(([todo, isComplete]) => (
-        <Todo
-          key={todo}
-          todo={todo}
-          isComplete={isComplete}
-          onChange={toggleTodo}
-          onRemove={removeTodo}
-        />
+    <>
+      <TodoInput onTaskAdded={onInputChanged} />
+      {[...todos.entries()].map(([key, value]) => (
+        <Todo key={key} todo={key} isComplete={value} onDeleted={deleteTask} />
       ))}
-      <BottomNav
-        selected={view}
-        options={views.map(view => ({
-          value: view.toLowerCase(),
-          label: view,
-        }))}
-        onChange={changeView}
-      />
-    </div>
+      <BottomNav options={views} onNavigationChanged={onViewChanged} />
+    </>
   );
 }
 
